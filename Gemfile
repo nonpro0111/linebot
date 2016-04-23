@@ -2,5 +2,7 @@
 source "https://rubygems.org"
 
 # gem "rails"
+ruby '2.3.0'
 gem 'sinatra'
-gem 'httpclient'
+gem 'rest-client'
+gem 'searchbing'
