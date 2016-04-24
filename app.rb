@@ -28,16 +28,32 @@ class App < Sinatra::Base
     params = JSON.parse(request.body.read)
 
     params['result'].each do |msg|
-      message = msg['content']['text']
-      if target = message.match(/(.+)の画像/)
-        reply_text = "#{target[1]}の画像何枚欲しい？\n例) 「3枚」とか「3」って数字で答えてね!"
-        settings.cache.set("#{msg['content']['from']}", target[1], 600)
+      case msg['content']['text']
+      when /(.+)の画像/
+        reply_text = "#{$1}の画像何枚欲しい？\n例) 「3枚」って数字で答えてね!"
+        settings.cache.set(msg['content']['from'], $1, 600)
+      when /([1-9])枚/
+        bing_image = Bing.new(ENV["BING_API_KEY"], 25, 'Image')
+        keyword = settings.cache.get(msg['content']['from'])
+        images = bing_image.search(keyword)[0][:Image].sample($1)
+        images.each do |image|
+          request_content = {
+            to: [msg['content']['from']],
+            toChannel: 1383378250,
+            eventType: "138311608800106203",
+            content: {
+              contentType: 2,
+              toType: 1,
+              originalContentUrl: image[:MediaUrl],
+              previewImageUrl: image[:MediaUrl]
+            }
+          }
+          send_request(request_content.to_json)
+        end
+        return
       else
         reply_text = "え？だれの画像？"
       end
-
-#      bing_image = Bing.new(ENV["BING_API_KEY"], 25, 'Image')
-#      image_url = bing_image.search(msg['content']['text'])[0][:Image].sample[:MediaUrl]
 
       request_content = {
         to: [msg['content']['from']],
@@ -49,17 +65,6 @@ class App < Sinatra::Base
           text: reply_text
         }
       }
-#      request_content = {
-#        to: [msg['content']['from']],
-#        toChannel: 1383378250,
-#        eventType: "138311608800106203",
-#        content: {
-#          contentType: 2,
-#          toType: 1,
-#          originalContentUrl: image_url,
-#          previewImageUrl: image_url
-#        }
-#      }
       send_request(request_content.to_json)
     end
   end
