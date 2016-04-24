@@ -32,7 +32,7 @@ class App < Sinatra::Base
       when /(.+)の画像/
         reply_text = "#{$1}の画像何枚欲しい？\n例) 「3枚」って数字で答えてね!"
         settings.cache.set(msg['content']['from'], $1, 600)
-        request_content = {
+        hoge = {
           to: [msg['content']['from']],
           toChannel: 1383378250,
           eventType: "138311608800106203",
@@ -40,6 +40,16 @@ class App < Sinatra::Base
             contentType: 1,
             toType: 1,
             text: reply_text
+          }
+        }
+        request_content = {
+          to: [msg['content']['from']],
+          toChannel: 1383378250,
+          eventType: "138311608800106203",
+          content: {
+            contentType: 1,
+            toType: 1,
+            text: hoge.to_s
           }
         }
         send_request(request_content.to_json)
