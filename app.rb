@@ -36,7 +36,7 @@ class App < Sinatra::Base
         bing_image = Bing.new(ENV["BING_API_KEY"], 25, 'Image')
         keyword = settings.cache.get(msg['content']['from'])
         image_num = $1.to_i
-        images = bing_image.search(keyword)[0][:Image].sample($1)
+        images = bing_image.search(keyword)[0][:Image].sample(image_num)
         images.each do |image|
           request_content = {
             to: [msg['content']['from']],
