@@ -48,20 +48,19 @@ class App < Sinatra::Base
           toType: 1,
           text: reply_text
         }
-        send_request(request_content(to, content))
       when /([1-9])枚/
         keyword = settings.cache.get(msg['content']['from'])
         bing_image = Bing.new(ENV["BING_API_KEY"], 25, 'Image')
         images = bing_image.search(keyword)[0][:Image].sample($1.to_i)
+        content = { toType: 1, messages: [] }
 
         images.each do |image|
-          content = {
+          message = { 
             contentType: 2,
-            toType: 1,
             originalContentUrl: image[:MediaUrl],
             previewImageUrl: image[:MediaUrl]
           }
-          send_request(request_content(to, content))
+          content[:messages] << message
         end
       else
         content = {
@@ -73,8 +72,9 @@ class App < Sinatra::Base
             STKPKGID: 2
           }
         }
-        send_request(request_content(to, content))
       end
+
+      send_request(request_content(to, content))
     end
   end
 end
