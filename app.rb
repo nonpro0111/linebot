@@ -61,9 +61,13 @@ class App < Sinatra::Base
         toChannel: 1383378250,
         eventType: "138311608800106203",
         content: {
-          contentType: 1,
+          contentType: 8,
           toType: 1,
-          text: reply_text
+          contentMetadata: {
+            STKVER: 100,
+            STKID: 149,
+            STKPKGID: 2
+          }
         }
       }
       send_request(request_content.to_json)
