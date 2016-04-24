@@ -31,7 +31,7 @@ class App < Sinatra::Base
       message = msg['content']['text']
       if message.match(/(.+)の画像/)
         reply_text = "#{message[1]}の画像何枚欲しい？\n例) 「3枚」とか「3」って数字で答えてね!"
-        settings.cache.set("#{msg['content']['from']}:target", message[1], 600)
+        settings.cache.set("#{msg['content']['fromChannel']}", message[1], 600)
       else
         reply_text = "え？だれの画像？"
       end
@@ -46,7 +46,7 @@ class App < Sinatra::Base
         content: {
           contentType: 1,
           toType: 1,
-          text: settings.cache.get("#{msg['content']['from']}:target")
+          text: reply_text
         }
       }
 #      request_content = {
