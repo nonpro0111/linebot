@@ -24,49 +24,67 @@ class App < Sinatra::Base
     })
   end
 
+  def set_content(to, content)
+    {
+      to: to,
+      toChannel: 1383378250,
+      eventType: "138311608800106203",
+      content: content
+    }
+  end
+
   post '/linebot/callback' do
     params = JSON.parse(request.body.read)
 
     params['result'].each do |msg|
+      to = msg['content']['from']
       case msg['content']['text']
       when /(.+)の画像/
         reply_text = "#{$1}の画像何枚欲しい？\n例) 「3枚」って数字で答えてね!"
-        settings.cache.set(msg['content']['from'], $1, 600)
-      when /([1-9])枚/
-        bing_image = Bing.new(ENV["BING_API_KEY"], 25, 'Image')
-        keyword = settings.cache.get(msg['content']['from'])
-        image_num = $1.to_i
-        images = bing_image.search(keyword)[0][:Image].sample(image_num)
-        images.each do |image|
-          request_content = {
-            to: [msg['content']['from']],
-            toChannel: 1383378250,
-            eventType: "138311608800106203",
-            content: {
-              contentType: 2,
-              toType: 1,
-              originalContentUrl: image[:MediaUrl],
-              previewImageUrl: image[:MediaUrl]
-            }
-          }
-          send_request(request_content.to_json)
-        end
-        return
-      else
-        reply_text = "え？だれの画像？"
-      end
-
-      request_content = {
-        to: [msg['content']['from']],
-        toChannel: 1383378250,
-        eventType: "138311608800106203",
-        content: {
+        settings.cache.set(to, $1, 600)
+        content = {
           contentType: 1,
           toType: 1,
           text: reply_text
         }
-      }
-      send_request(request_content.to_json)
+        request_content = set_content(to, content)
+        send_request(request_content.to_json)
+      when /([1-9])枚/
+        bing_image = Bing.new(ENV["BING_API_KEY"], 25, 'Image')
+        keyword = settings.cache.get(to)
+        image_num = $1.to_i
+        images = bing_image.search(keyword)[0][:Image].sample(image_num)
+        images.each do |image|
+          content = {
+            contentType: 2,
+            toType: 1,
+            originalContentUrl: image[:MediaUrl],
+            previewImageUrl: image[:MediaUrl]
+          }
+          request_content = set_content(to, content)
+          send_request(request_content.to_json)
+        end
+        # cache削除
+        settings.cache.delete(to)
+      else
+#        content = {
+#          contentType: 8,
+#          toType: 1,
+#          contentMetadata: {
+#            STKID: 3,
+#            STKPKGID: 332,
+#            STKVER: 100
+#          }
+#        }
+        reply_text = msg['content']['contentMetadata'].to_s
+        content = {
+          contentType: 1,
+          toType: 1,
+          text: reply_text
+        }
+        request_content = set_content(to, content)
+        send_request(request_content.to_json)
+      end
     end
   end
 end
