@@ -2,6 +2,7 @@ require "sinatra/base"
 require 'json'
 require 'rest-client'
 require 'searchbing'
+require 'dalli'
 
 class App < Sinatra::Base
 
