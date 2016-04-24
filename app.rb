@@ -2,9 +2,7 @@ require "sinatra/base"
 require 'json'
 require 'rest-client'
 require 'searchbing'
-require 'memcachier'
 require 'dalli'
-ENV["MEMCACHIER_SERVERS"] = "mc3.dev.ec2.memcachier.com:11211"
 
 configure do
   dalli = Dalli::Client.new(ENV["MEMCACHIER_SERVERS"].split(","),
