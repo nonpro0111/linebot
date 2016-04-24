@@ -4,15 +4,15 @@ require 'rest-client'
 require 'searchbing'
 require 'dalli'
 
-configure do
-  dalli = Dalli::Client.new(ENV["MEMCACHIER_SERVERS"].split(","),
-                      {:username => ENV["MEMCACHIER_USERNAME"],
-                      :password => ENV["MEMCACHIER_PASSWORD"]
-                      })
-  set :cache, dalli
-end
-
 class App < Sinatra::Base
+  configure do
+    dalli = Dalli::Client.new(ENV["MEMCACHIER_SERVERS"].split(","),
+                        {:username => ENV["MEMCACHIER_USERNAME"],
+                        :password => ENV["MEMCACHIER_PASSWORD"]
+                        })
+    set :cache, dalli
+  end
+
   def send_request(content_json)
     endpoint_uri = 'https://trialbot-api.line.me/v1/events'
     RestClient.proxy = ENV['FIXIE_URL'] if ENV['FIXIE_URL']
