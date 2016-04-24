@@ -2,13 +2,17 @@ require "sinatra/base"
 require 'json'
 require 'rest-client'
 require 'searchbing'
+require 'memcachier'
 require 'dalli'
+ENV["MEMCACHIER_SERVERS"] = "mc3.dev.ec2.memcachier.com:11211"
 
-dalli = Dalli::Client.new(ENV["MEMCACHIER_SERVERS"].split(","),
-                    {:username => ENV["MEMCACHIER_USERNAME"],
-                     :password => ENV["MEMCACHIER_PASSWORD"]
-                    })
-set :cache, dalli
+configure do
+  dalli = Dalli::Client.new(ENV["MEMCACHIER_SERVERS"].split(","),
+                      {:username => ENV["MEMCACHIER_USERNAME"],
+                      :password => ENV["MEMCACHIER_PASSWORD"]
+                      })
+  set :cache, dalli
+end
 
 class App < Sinatra::Base
   def send_request(content_json)
