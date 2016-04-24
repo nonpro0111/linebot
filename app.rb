@@ -24,8 +24,8 @@ class App < Sinatra::Base
       image_url = bing_image.search(msg['content']['text'])[0][:Image].sample[:MediaUrl]
       request_content = {
         to: [msg['content']['from']],
-        toChannel: 1383378250, # Fixed  value
-        eventType: "138311608800106203", # Fixed value
+        toChannel: 1383378250,
+        eventType: "138311608800106203",
         content: {
           contentType: 2,
           toType: 1,
@@ -35,7 +35,5 @@ class App < Sinatra::Base
       }
       send_request(request_content.to_json)
     end
-
-    "OK"
   end
 end
