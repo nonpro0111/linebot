@@ -24,62 +24,57 @@ class App < Sinatra::Base
     })
   end
 
+  def request_content(to, content)
+    {
+      to: to,
+      toChannel: 1383378250,
+      eventType: "138311608800106203",
+      content: content
+    }.to_json
+  end
+
   post '/linebot/callback' do
     params = JSON.parse(request.body.read)
 
     params['result'].each do |msg|
+      to = [msg['content']['from']]
+
       case msg['content']['text']
       when /(.+)の画像/
         reply_text = "#{$1}の画像何枚欲しい？\n例) 「3枚」って数字で答えてね!"
         settings.cache.set(msg['content']['from'], $1, 600)
-        request_content = {
-          to: [msg['content']['from']],
-          toChannel: 1383378250,
-          eventType: "138311608800106203",
-          content: {
-            contentType: 1,
-            toType: 1,
-            text: reply_text
-          }
+        content = {
+          contentType: 1,
+          toType: 1,
+          text: reply_text
         }
-        send_request(request_content.to_json)
+        send_request(request_content(to, content))
       when /([1-9])枚/
-        bing_image = Bing.new(ENV["BING_API_KEY"], 25, 'Image')
         keyword = settings.cache.get(msg['content']['from'])
-        image_num = $1.to_i
-        images = bing_image.search(keyword)[0][:Image].sample(image_num)
+        bing_image = Bing.new(ENV["BING_API_KEY"], 25, 'Image')
+        images = bing_image.search(keyword)[0][:Image].sample($1.to_i)
+
         images.each do |image|
-          request_content = {
-            to: [msg['content']['from']],
-            toChannel: 1383378250,
-            eventType: "138311608800106203",
-            content: {
-              contentType: 2,
-              toType: 1,
-              originalContentUrl: image[:MediaUrl],
-              previewImageUrl: image[:MediaUrl]
-            }
+          content = {
+            contentType: 2,
+            toType: 1,
+            originalContentUrl: image[:MediaUrl],
+            previewImageUrl: image[:MediaUrl]
           }
-          send_request(request_content.to_json)
+          send_request(request_content(to, content))
         end
       else
-        request_content = {
-          to: [msg['content']['from']],
-          toChannel: 1383378250,
-          eventType: "138311608800106203",
-          content: {
-            contentType: 8,
-            toType: 1,
-            contentMetadata: {
-              STKVER: 100,
-              STKID: 149,
-              STKPKGID: 2
-            }
+        content = {
+          contentType: 8,
+          toType: 1,
+          contentMetadata: {
+            STKVER: 100,
+            STKID: 149,
+            STKPKGID: 2
           }
         }
-        send_request(request_content.to_json)
+        send_request(request_content(to, content))
       end
-
     end
   end
 end
