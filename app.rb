@@ -53,7 +53,7 @@ class App < Sinatra::Base
         end
         return
       else
-        reply_text = "え？だれの画像？"
+        reply_text = msg['content']['contentMetadata'].to_s
       end
 
       request_content = {
